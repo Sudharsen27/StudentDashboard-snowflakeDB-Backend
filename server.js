@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { connection } from "./db.js";
+import { executeStatement } from "./db.js";
 
 dotenv.config();
 
@@ -77,7 +77,7 @@ app.get("/students", (req, res) => {
   console.log("QUERY:", query);
   console.log("BINDS:", binds);
 
-  connection.execute({
+  executeStatement({
     sqlText: query,
     binds,
     complete: (err, stmt, rows) => {
@@ -97,13 +97,13 @@ app.get("/students", (req, res) => {
 app.post("/students", (req, res) => {
   const { id, name, marks } = req.body;
 
-  connection.execute({
+  executeStatement({
     sqlText: `INSERT INTO students (id, name) VALUES (?, ?)`,
     binds: [id, name],
     complete: (err) => {
       if (err) return res.status(500).send(err.message);
 
-      connection.execute({
+      executeStatement({
         sqlText: `INSERT INTO marks (student_id, marks) VALUES (?, ?)`,
         binds: [id, marks],
         complete: (err2) => {
@@ -123,13 +123,13 @@ app.put("/students/:id", (req, res) => {
   const id = req.params.id;
   const { name, marks } = req.body;
 
-  connection.execute({
+  executeStatement({
     sqlText: `UPDATE students SET name=? WHERE id=?`,
     binds: [name, id],
     complete: (err) => {
       if (err) return res.status(500).send(err.message);
 
-      connection.execute({
+      executeStatement({
         sqlText: `UPDATE marks SET marks=? WHERE student_id=?`,
         binds: [marks, id],
         complete: (err2) => {
@@ -148,13 +148,13 @@ app.put("/students/:id", (req, res) => {
 app.delete("/students/:id", (req, res) => {
   const id = req.params.id;
 
-  connection.execute({
+  executeStatement({
     sqlText: `DELETE FROM marks WHERE student_id=?`,
     binds: [id],
     complete: (err) => {
       if (err) return res.status(500).send(err.message);
 
-      connection.execute({
+      executeStatement({
         sqlText: `DELETE FROM students WHERE id=?`,
         binds: [id],
         complete: (err2) => {
