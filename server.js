@@ -6,7 +6,11 @@ import { connection } from "./db.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+// Allow Vercel (and previews): comma-separated origins, or any origin if unset
+const corsOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(",").map((s) => s.trim())
+  : true;
+app.use(cors({ origin: corsOrigins }));
 app.use(express.json());
 
 /* =========================
